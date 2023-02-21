@@ -496,6 +496,66 @@ def orthogonal_(tensor, gain=1):
     return tensor
 
 
+def symmetric_(tensor, gain=1):
+    r"""Fills the input `Tensor` with symmetric matrices. The input tensor must have
+    at least 2 dimensions and the last two dimensions must be equal.
+
+    Args:
+        tensor: an n-dimensional `torch.Tensor`, where :math:`n \geq 2`
+        gain: optional scaling factor
+
+    Examples:
+        >>> w = torch.empty(5, 5)
+        >>> nn.init.symmetric_(w)
+    """
+    if tensor.ndimension() < 2:
+        raise ValueError("Only tensors with 2 or more dimensions are supported")
+
+    if tensor.size(-1) != tensor.size(-2):
+        raise ValueError("Only square matrices are supported")
+
+    if tensor.numel() == 0:
+        # no-op
+        return tensor
+
+    with torch.no_grad():
+        random_mat = torch.randn_like(tensor)
+        symm_mat = (random_mat + random_mat.transpose(-1, -2)) / 2
+        tensor.copy_(symm_mat)
+        tensor.mul_(gain)
+    return tensor
+
+
+def skew_symmetric_(tensor, gain=1):
+    r"""Fills the input `Tensor` with skew-symmetric matrices. The input tensor
+    must have at least 2 dimensions and the last two dimensions must be equal.
+
+    Args:
+        tensor: an n-dimensional `torch.Tensor`, where :math:`n \geq 2`
+        gain: optional scaling factor
+
+    Examples:
+        >>> w = torch.empty(5, 5)
+        >>> nn.init.skew_symmetric_(w)
+    """
+    if tensor.ndimension() < 2:
+        raise ValueError("Only tensors with 2 or more dimensions are supported")
+
+    if tensor.size(-1) != tensor.size(-2):
+        raise ValueError("Only square matrices are supported")
+
+    if tensor.numel() == 0:
+        # no-op
+        return tensor
+
+    with torch.no_grad():
+        random_mat = torch.randn_like(tensor)
+        sksymm_mat = (random_mat - random_mat.transpose(-1, -2)) / 2
+        tensor.copy_(sksymm_mat)
+        tensor.mul_(gain)
+    return tensor
+
+
 def sparse_(tensor, sparsity, std=0.01):
     r"""Fills the 2D input `Tensor` as a sparse matrix, where the
     non-zero elements will be drawn from the normal distribution

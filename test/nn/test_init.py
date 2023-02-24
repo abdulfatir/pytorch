@@ -410,6 +410,47 @@ class TestNNInit(TestCase):
                     self.assertEqual(torch.mm(flattened_tensor, flattened_tensor.t()),
                                      torch.eye(rows) * gain ** 2, atol=1e-6, rtol=0)
 
+
+    def test_symmetric(self):
+        for use_gain in [True, False]:
+            for tensor_size in [[4, 4], [3, 3], [20, 2, 4, 4], [2, 3, 5, 5]]:
+                input_tensor = torch.zeros(tensor_size)
+                gain = 1.0
+
+                if use_gain:
+                    gain = self._random_float(0.1, 2)
+                    init.symmetric_(input_tensor, gain=gain)
+                else:
+                    init.symmetric_(input_tensor)
+
+                    self.assertEqual(
+                        input_tensor,
+                        torch.transpose(input_tensor, dim0=-1, dim1=-2),
+                        atol=1e-6,
+                        rtol=0
+                    )
+
+
+    def test_skew_symmetric(self):
+        for use_gain in [True, False]:
+            for tensor_size in [[4, 4], [3, 3], [20, 2, 4, 4], [2, 3, 5, 5]]:
+                input_tensor = torch.zeros(tensor_size)
+                gain = 1.0
+
+                if use_gain:
+                    gain = self._random_float(0.1, 2)
+                    init.skew_symmetric_(input_tensor, gain=gain)
+                else:
+                    init.skew_symmetric_(input_tensor)
+
+                    self.assertEqual(
+                        input_tensor,
+                        -torch.transpose(input_tensor, dim0=-1, dim1=-2),
+                        atol=1e-6,
+                        rtol=0
+                    )
+
+
     def test_deprecation(self):
         x = torch.randn(3, 3)
 
